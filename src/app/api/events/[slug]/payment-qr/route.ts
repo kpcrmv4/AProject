@@ -25,7 +25,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // 2. Authorize — check event ownership
     const { data: event, error: eventError } = await supabase
-      .from("event-assets")
+      .from("events")
       .select("id, admin_id")
       .eq("slug", slug)
       .single();
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // 6. Update event with QR URL
     const { data: updated, error: updateError } = await supabase
-      .from("event-assets")
+      .from("events")
       .update({
         payment_qr_url: urlData.publicUrl,
         updated_at: new Date().toISOString(),

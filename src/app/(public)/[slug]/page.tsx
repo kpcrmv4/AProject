@@ -39,13 +39,15 @@ import {
   Upload,
   Loader2,
   CheckCircle2,
-  BarChart3,
   Image as ImageIcon,
   Users,
+  Copy,
+  ArrowLeft,
 } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/utils/format";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
+import QRCode from "qrcode";
 
 // --- Types ---
 
@@ -298,6 +300,72 @@ function RegisteredRacersSection({
   );
 }
 
+// --- Registration success ---
+
+function RegistrationSuccess({
+  shortUid,
+  slug,
+}: {
+  shortUid: string;
+  slug: string;
+}) {
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+
+  useEffect(() => {
+    const url = `${window.location.origin}/racer/${shortUid}`;
+    QRCode.toDataURL(url, { width: 200, margin: 2 })
+      .then(setQrDataUrl)
+      .catch(() => {});
+  }, [shortUid]);
+
+  function copyLink() {
+    const url = `${window.location.origin}/racer/${shortUid}`;
+    navigator.clipboard.writeText(url);
+    toast.success("คัดลอกลิงก์แล้ว");
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <Card className="w-full max-w-sm text-center">
+        <CardContent className="flex flex-col items-center gap-4 py-8">
+          <CheckCircle2 className="size-16 text-emerald-600" />
+          <h2 className="text-2xl font-bold">สมัครสำเร็จ!</h2>
+          <p className="text-muted-foreground">
+            รอผู้จัดยืนยันการชำระเงิน สแกน QR หรือกดลิงก์ด้านล่างเพื่อดูสถานะ
+          </p>
+
+          {qrDataUrl && (
+            <img
+              src={qrDataUrl}
+              alt="QR Code"
+              className="rounded-lg border"
+            />
+          )}
+
+          <Separator />
+
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={copyLink}
+          >
+            <Copy className="size-4" />
+            คัดลอกลิงก์ดูรายละเอียด
+          </Button>
+
+          <Link href={`/${slug}`} className="w-full">
+            <Button variant="ghost" className="w-full gap-2">
+              <ArrowLeft className="size-4" />
+              กลับหน้าสมัคร
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+      <Toaster position="top-center" richColors />
+    </div>
+  );
+}
+
 // --- Main page ---
 
 export default function PublicEventPage() {
@@ -319,7 +387,7 @@ export default function PublicEventPage() {
   const [racerPhoto, setRacerPhoto] = useState<File | null>(null);
   const [paymentSlip, setPaymentSlip] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [registered, setRegistered] = useState(false);
+  const [registeredUid, setRegisteredUid] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -402,7 +470,8 @@ export default function PublicEventPage() {
         }),
       });
 
-      const json: ApiResponse<{ id: string }> = await res.json();
+      const json: ApiResponse<{ id: string; short_uid: string }> =
+        await res.json();
 
       if (json.error) {
         toast.error(json.error.message);
@@ -423,7 +492,7 @@ export default function PublicEventPage() {
       }
 
       toast.success("สมัครสำเร็จ!");
-      setRegistered(true);
+      setRegisteredUid(json.data.short_uid);
     } catch {
       toast.error("เกิดข้อผิดพลาด กรุณาลองใหม่");
     } finally {
@@ -449,27 +518,8 @@ export default function PublicEventPage() {
   }
 
   // Success state
-  if (registered) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <Card className="w-full max-w-sm text-center">
-          <CardContent className="flex flex-col items-center gap-4 py-8">
-            <CheckCircle2 className="size-16 text-emerald-600" />
-            <h2 className="text-2xl font-bold">สมัครสำเร็จ!</h2>
-            <p className="text-muted-foreground">
-              รอผู้จัดยืนยันการชำระเงิน คุณจะได้รับเบอร์แข่งเมื่อยืนยันแล้ว
-            </p>
-            <Link href={`/${slug}/results`}>
-              <Button variant="outline" className="gap-2">
-                <BarChart3 className="size-4" />
-                ดูผลแข่งสด
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-        <Toaster position="top-center" richColors />
-      </div>
-    );
+  if (registeredUid) {
+    return <RegistrationSuccess shortUid={registeredUid} slug={slug} />;
   }
 
   return (
@@ -504,12 +554,6 @@ export default function PublicEventPage() {
                     ? "การรับสมัครปิดแล้ว"
                     : "การรับสมัครยังไม่เปิด"}
                 </p>
-                <Link href={`/${slug}/results`}>
-                  <Button variant="outline" className="mt-4 gap-2">
-                    <BarChart3 className="size-4" />
-                    ดูผลแข่งสด
-                  </Button>
-                </Link>
               </CardContent>
             </Card>
           ) : (

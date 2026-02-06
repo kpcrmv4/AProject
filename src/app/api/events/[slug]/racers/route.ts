@@ -102,7 +102,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // 3. Use service client for transaction-like operations (bypass RLS for rpc)
     const serviceClient = await createServiceClient();
 
-    // 4. Create racer
+    // 4. Generate short_uid
+    const { data: shortUid } = await serviceClient.rpc("generate_short_uid");
+
+    // 5. Create racer
     const { data: racer, error: racerError } = await serviceClient
       .from("racers")
       .insert({
@@ -112,6 +115,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         bike: parsed.data.bike ?? null,
         phone: parsed.data.phone ?? null,
         photo_url: parsed.data.photo_url ?? null,
+        short_uid: (shortUid as string) ?? null,
       })
       .select()
       .single();

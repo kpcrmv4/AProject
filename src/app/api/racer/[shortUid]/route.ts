@@ -4,10 +4,20 @@ import { successResponse, errorResponse } from "@/types";
 
 type RouteParams = { params: Promise<{ shortUid: string }> };
 
-// GET /api/racer/[shortUid] — Public racer detail by short UID
+// GET /api/racer/[shortUid]?phone_last4=xxxx — Public racer detail by short UID
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { shortUid } = await params;
+    const phoneLast4 = request.nextUrl.searchParams.get("phone_last4");
+
+    // Require phone_last4 verification
+    if (!phoneLast4 || !/^\d{4}$/.test(phoneLast4)) {
+      return NextResponse.json(
+        errorResponse("VALIDATION_ERROR", "กรุณากรอกเบอร์โทร 4 หลักสุดท้าย"),
+        { status: 400 }
+      );
+    }
+
     const supabase = await createClient();
 
     // 1. Look up racer by short_uid
@@ -26,7 +36,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // 2. Check event is published
+    // 2. Verify phone last 4 digits
+    const racerPhone = (racer.phone ?? "").replace(/\D/g, "");
+    if (racerPhone.length < 4 || racerPhone.slice(-4) !== phoneLast4) {
+      return NextResponse.json(
+        errorResponse("FORBIDDEN", "เบอร์โทรไม่ถูกต้อง"),
+        { status: 403 }
+      );
+    }
+
+    // 3. Check event is published
     const event = racer.events as {
       id: string;
       name: string;
@@ -42,7 +61,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // 3. Get racer's class registrations
+    // 4. Get racer's class registrations
     const { data: racerClasses, error: rcError } = await supabase
       .from("racer_classes")
       .select("*, classes(*)")

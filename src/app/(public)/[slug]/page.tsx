@@ -396,7 +396,7 @@ export default function PublicEventPage() {
           name,
           team: team || undefined,
           bike: bike || undefined,
-          phone: phone || undefined,
+          phone,
           class_ids: selectedClassIds,
           photo_url: photoUrl,
         }),
@@ -555,13 +555,14 @@ export default function PublicEventPage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="racer-phone">เบอร์โทร</Label>
+                    <Label htmlFor="racer-phone">เบอร์โทร *</Label>
                     <Input
                       id="racer-phone"
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="0xx-xxx-xxxx"
+                      required
                       disabled={submitting}
                     />
                   </div>

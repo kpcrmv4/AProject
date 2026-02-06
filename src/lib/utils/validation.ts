@@ -31,7 +31,7 @@ export const registrationSchema = z.object({
   name: z.string().min(1, "กรุณาใส่ชื่อ-นามสกุล"),
   team: z.string().optional(),
   bike: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z.string().min(1, "กรุณาใส่เบอร์โทร"),
   class_ids: z.array(z.string()).min(1, "กรุณาเลือกอย่างน้อย 1 รุ่น"),
   photo_url: z.string().url().optional(),
   payment_slip_url: z.string().url().optional(),

@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
 import type { ApiResponse } from "@/types/api";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import {
   Timer,
@@ -23,6 +25,8 @@ import {
   Copy,
   CheckCircle2,
   Clock,
+  Loader2,
+  Lock,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils/format";
 import { toast } from "sonner";
@@ -58,77 +62,131 @@ type RacerDetail = {
   };
 };
 
-function RacerDetailSkeleton() {
+// --- Phone verification gate ---
+
+function PhoneVerificationForm({
+  onVerified,
+}: {
+  onVerified: (data: RacerDetail) => void;
+}) {
+  const params = useParams<{ shortUid: string }>();
+  const shortUid = params.shortUid;
+
+  const [phoneLast4, setPhoneLast4] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (!/^\d{4}$/.test(phoneLast4)) {
+      setError("กรุณากรอกตัวเลข 4 หลัก");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(
+        `/api/racer/${shortUid}?phone_last4=${phoneLast4}`
+      );
+      const json: ApiResponse<RacerDetail> = await res.json();
+
+      if (json.error) {
+        setError(json.error.message);
+        return;
+      }
+
+      onVerified(json.data);
+    } catch {
+      setError("เกิดข้อผิดพลาด กรุณาลองใหม่");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-8">
-      <Skeleton className="h-10 w-48" />
-      <Skeleton className="h-64 w-full" />
-      <Skeleton className="h-48 w-full" />
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-muted">
+            <Lock className="size-6 text-muted-foreground" />
+          </div>
+          <CardTitle>ยืนยันตัวตน</CardTitle>
+          <CardDescription>
+            กรอกเบอร์โทร 4 หลักสุดท้ายที่ใช้สมัคร
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="phone-last4">เบอร์โทร 4 หลักสุดท้าย</Label>
+              <Input
+                id="phone-last4"
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="xxxx"
+                value={phoneLast4}
+                onChange={(e) =>
+                  setPhoneLast4(e.target.value.replace(/\D/g, "").slice(0, 4))
+                }
+                className="text-center text-2xl tracking-[0.5em] font-mono"
+                disabled={loading}
+                autoFocus
+              />
+            </div>
+
+            {error !== null && (
+              <p className="text-sm text-destructive text-center">{error}</p>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading || phoneLast4.length !== 4}
+              className="w-full"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  กำลังตรวจสอบ...
+                </>
+              ) : (
+                "ยืนยัน"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+      <Toaster position="top-center" richColors />
     </div>
   );
 }
 
-export default function RacerDetailPage() {
+// --- Racer detail view ---
+
+function RacerDetailView({ data }: { data: RacerDetail }) {
   const params = useParams<{ shortUid: string }>();
   const shortUid = params.shortUid;
 
-  const [data, setData] = useState<RacerDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const qrGenerated = useRef(false);
 
   useEffect(() => {
-    async function fetchRacer() {
-      try {
-        const res = await fetch(`/api/racer/${shortUid}`);
-        const json: ApiResponse<RacerDetail> = await res.json();
-
-        if (json.error) {
-          setError(json.error.message);
-          return;
-        }
-
-        setData(json.data);
-      } catch {
-        setError("ไม่สามารถโหลดข้อมูลได้");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchRacer();
-  }, [shortUid]);
-
-  useEffect(() => {
-    if (data && !qrGenerated.current) {
+    if (!qrGenerated.current) {
       qrGenerated.current = true;
       const url = `${window.location.origin}/racer/${shortUid}`;
-      QRCode.toDataURL(url, { width: 200, margin: 2 }).then(setQrDataUrl).catch(() => {});
+      QRCode.toDataURL(url, { width: 200, margin: 2 })
+        .then(setQrDataUrl)
+        .catch(() => {});
     }
-  }, [data, shortUid]);
+  }, [shortUid]);
 
   function copyLink() {
     const url = `${window.location.origin}/racer/${shortUid}`;
     navigator.clipboard.writeText(url);
     toast.success("คัดลอกลิงก์แล้ว");
-  }
-
-  if (loading) {
-    return <RacerDetailSkeleton />;
-  }
-
-  if (error || !data) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <Card className="w-full max-w-sm">
-          <CardContent className="py-8 text-center">
-            <p className="text-destructive">{error ?? "ไม่พบข้อมูลนักแข่ง"}</p>
-          </CardContent>
-        </Card>
-        <Toaster position="top-center" richColors />
-      </div>
-    );
   }
 
   const { racer, racer_classes, event } = data;
@@ -282,4 +340,16 @@ export default function RacerDetailPage() {
       <Toaster position="top-center" richColors />
     </div>
   );
+}
+
+// --- Main page (gate) ---
+
+export default function RacerDetailPage() {
+  const [data, setData] = useState<RacerDetail | null>(null);
+
+  if (!data) {
+    return <PhoneVerificationForm onVerified={setData} />;
+  }
+
+  return <RacerDetailView data={data} />;
 }

@@ -47,7 +47,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // 3. Generate new code
     const newCode = generateAccessCode();
-    const codeExpiresAt = `${event.race_date}T23:59:59`;
+    const codeExpiresAt = `${event.race_date}T23:59:59+07:00`;
 
     const { data: updated, error: updateError } = await supabase
       .from("checkpoints")

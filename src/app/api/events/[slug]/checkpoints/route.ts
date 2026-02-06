@@ -100,7 +100,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // 4. Execute — auto-generate 4-digit access code, expires end of race day
     const accessCode = generateAccessCode();
-    const codeExpiresAt = `${event.race_date}T23:59:59`;
+    const codeExpiresAt = `${event.race_date}T23:59:59+07:00`;
 
     const { data: checkpoint, error: insertError } = await supabase
       .from("checkpoints")

@@ -304,10 +304,10 @@ function RegisteredRacersSection({
 
 function RegistrationSuccess({
   shortUid,
-  slug,
+  onBack,
 }: {
   shortUid: string;
-  slug: string;
+  onBack: () => void;
 }) {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
@@ -353,12 +353,10 @@ function RegistrationSuccess({
             คัดลอกลิงก์ดูรายละเอียด
           </Button>
 
-          <Link href={`/${slug}`} className="w-full">
-            <Button variant="ghost" className="w-full gap-2">
-              <ArrowLeft className="size-4" />
-              กลับหน้าสมัคร
-            </Button>
-          </Link>
+          <Button variant="ghost" className="w-full gap-2" onClick={onBack}>
+            <ArrowLeft className="size-4" />
+            กลับหน้าสมัคร
+          </Button>
         </CardContent>
       </Card>
       <Toaster position="top-center" richColors />
@@ -519,7 +517,22 @@ export default function PublicEventPage() {
 
   // Success state
   if (registeredUid) {
-    return <RegistrationSuccess shortUid={registeredUid} slug={slug} />;
+    return (
+      <RegistrationSuccess
+        shortUid={registeredUid}
+        onBack={() => {
+          setRegisteredUid(null);
+          setName("");
+          setTeam("");
+          setBike("");
+          setPhone("");
+          setSelectedClassIds([]);
+          setRacerPhoto(null);
+          setPaymentSlip(null);
+          fetchData();
+        }}
+      />
+    );
   }
 
   return (

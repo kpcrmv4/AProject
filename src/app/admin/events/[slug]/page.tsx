@@ -26,6 +26,7 @@ import {
   Printer,
   Gamepad2,
   Layers,
+  ClipboardCheck,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils/format";
 
@@ -58,6 +59,7 @@ const NAV_LINKS = [
   { href: "checkpoints", label: "Checkpoints", icon: MapPin, desc: "จุดจับเวลาและรหัสเข้าถึง" },
   { href: "class-checkpoints", label: "เส้นทางรุ่น", icon: Flag, desc: "กำหนด checkpoint ต่อรุ่น" },
   { href: "racers", label: "นักแข่ง", icon: Users, desc: "รายชื่อและยืนยันการสมัคร" },
+  { href: "approvals", label: "อนุมัติสมัคร", icon: ClipboardCheck, desc: "ตรวจสลิปและยืนยันการสมัคร" },
   { href: "race-control", label: "ควบคุมการแข่ง", icon: Gamepad2, desc: "ติดตามสถานะ real-time" },
   { href: "settings", label: "ตั้งค่า", icon: Settings, desc: "แก้ไขข้อมูลงาน" },
   { href: "qr-codes", label: "QR Codes", icon: QrCode, desc: "QR สำหรับลงทะเบียนและดูผล" },

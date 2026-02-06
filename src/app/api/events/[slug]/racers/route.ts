@@ -111,6 +111,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         team: parsed.data.team ?? null,
         bike: parsed.data.bike ?? null,
         phone: parsed.data.phone ?? null,
+        photo_url: parsed.data.photo_url ?? null,
       })
       .select()
       .single();

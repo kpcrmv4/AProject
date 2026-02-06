@@ -30,11 +30,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, Search, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, Search, CheckCircle2, XCircle, Copy, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 type RacerWithClasses = Racer & {
   racer_classes: (RacerClass & { class: RaceClass })[];
+  short_uid?: string | null;
 };
 
 function RacersSkeleton() {
@@ -219,6 +220,7 @@ export default function RacersPage() {
                     <TableHead className="hidden sm:table-cell">ทีม</TableHead>
                     <TableHead>รุ่น</TableHead>
                     <TableHead>สถานะ</TableHead>
+                    <TableHead>ลิงก์</TableHead>
                     <TableHead className="text-right">จัดการ</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -226,7 +228,7 @@ export default function RacersPage() {
                   {filteredRacers.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={7}
                         className="py-8 text-center text-muted-foreground"
                       >
                         ไม่พบผลลัพธ์
@@ -281,6 +283,39 @@ export default function RacersPage() {
                               )}
                             </div>
                           ))}
+                        </TableCell>
+                        <TableCell>
+                          {racer.short_uid ? (
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 gap-1 px-2 text-xs"
+                                onClick={() => {
+                                  const url = `${window.location.origin}/racer/${racer.short_uid}`;
+                                  navigator.clipboard.writeText(url);
+                                  toast.success("คัดลอกลิงก์แล้ว");
+                                }}
+                              >
+                                <Copy className="size-3" />
+                                คัดลอก
+                              </Button>
+                              <Link
+                                href={`/racer/${racer.short_uid}`}
+                                target="_blank"
+                              >
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2"
+                                >
+                                  <ExternalLink className="size-3" />
+                                </Button>
+                              </Link>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           {racer.racer_classes.map((rc) => (

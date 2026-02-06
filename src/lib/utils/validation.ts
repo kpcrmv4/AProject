@@ -33,6 +33,8 @@ export const registrationSchema = z.object({
   bike: z.string().optional(),
   phone: z.string().optional(),
   class_ids: z.array(z.string()).min(1, "กรุณาเลือกอย่างน้อย 1 รุ่น"),
+  photo_url: z.string().url().optional(),
+  payment_slip_url: z.string().url().optional(),
 });
 
 // Staff auth schema

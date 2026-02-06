@@ -182,6 +182,8 @@ export type Database = {
           team: string | null;
           bike: string | null;
           phone: string | null;
+          photo_url: string | null;
+          short_uid: string | null;
           created_at: string;
         };
         Insert: {
@@ -191,6 +193,8 @@ export type Database = {
           team?: string | null;
           bike?: string | null;
           phone?: string | null;
+          photo_url?: string | null;
+          short_uid?: string | null;
           created_at?: string;
         };
         Update: {
@@ -200,6 +204,8 @@ export type Database = {
           team?: string | null;
           bike?: string | null;
           phone?: string | null;
+          photo_url?: string | null;
+          short_uid?: string | null;
           created_at?: string;
         };
         Relationships: [
@@ -472,6 +478,10 @@ export type Database = {
           p_racer_id: string;
           p_recorded_by?: string;
         };
+        Returns: string;
+      };
+      generate_short_uid: {
+        Args: Record<string, never>;
         Returns: string;
       };
     };

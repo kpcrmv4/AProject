@@ -15,7 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
   Users,
@@ -27,6 +26,7 @@ import {
   Gamepad2,
   Layers,
   ClipboardCheck,
+  Calendar,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils/format";
 
@@ -40,14 +40,14 @@ function EventDetailSkeleton() {
   return (
     <div className="flex flex-col gap-6">
       <Skeleton className="h-8 w-64" />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
+      <div className="grid grid-cols-3 gap-3">
+        <Skeleton className="h-20" />
+        <Skeleton className="h-20" />
+        <Skeleton className="h-20" />
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-20" />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <Skeleton key={i} className="h-24" />
         ))}
       </div>
     </div>
@@ -55,15 +55,15 @@ function EventDetailSkeleton() {
 }
 
 const NAV_LINKS = [
-  { href: "classes", label: "รุ่นการแข่ง", icon: Layers, desc: "จัดการรุ่นและค่าสมัคร" },
-  { href: "checkpoints", label: "Checkpoints", icon: MapPin, desc: "จุดจับเวลาและรหัสเข้าถึง" },
-  { href: "class-checkpoints", label: "เส้นทางรุ่น", icon: Flag, desc: "กำหนด checkpoint ต่อรุ่น" },
-  { href: "racers", label: "นักแข่ง", icon: Users, desc: "รายชื่อและยืนยันการสมัคร" },
-  { href: "approvals", label: "อนุมัติสมัคร", icon: ClipboardCheck, desc: "ตรวจสลิปและยืนยันการสมัคร" },
-  { href: "race-control", label: "ควบคุมการแข่ง", icon: Gamepad2, desc: "ติดตามสถานะ real-time" },
-  { href: "settings", label: "ตั้งค่า", icon: Settings, desc: "แก้ไขข้อมูลงาน" },
-  { href: "qr-codes", label: "QR Codes", icon: QrCode, desc: "QR สำหรับลงทะเบียนและดูผล" },
-  { href: "print", label: "พิมพ์บัตร", icon: Printer, desc: "พิมพ์บัตรนักแข่ง 80mm" },
+  { href: "classes", label: "รุ่นการแข่ง", icon: Layers, desc: "จัดการรุ่นและค่าสมัคร", color: "text-blue-500", bg: "bg-blue-500/10" },
+  { href: "checkpoints", label: "Checkpoints", icon: MapPin, desc: "จุดจับเวลาและรหัสเข้าถึง", color: "text-rose-500", bg: "bg-rose-500/10" },
+  { href: "class-checkpoints", label: "เส้นทางรุ่น", icon: Flag, desc: "กำหนด checkpoint ต่อรุ่น", color: "text-amber-500", bg: "bg-amber-500/10" },
+  { href: "racers", label: "นักแข่ง", icon: Users, desc: "รายชื่อและยืนยันการสมัคร", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { href: "approvals", label: "อนุมัติสมัคร", icon: ClipboardCheck, desc: "ตรวจสลิปและยืนยันการสมัคร", color: "text-violet-500", bg: "bg-violet-500/10" },
+  { href: "race-control", label: "ควบคุมการแข่ง", icon: Gamepad2, desc: "ติดตามสถานะ real-time", color: "text-orange-500", bg: "bg-orange-500/10" },
+  { href: "settings", label: "ตั้งค่า", icon: Settings, desc: "แก้ไขข้อมูลงาน", color: "text-slate-500", bg: "bg-slate-500/10" },
+  { href: "qr-codes", label: "QR Codes", icon: QrCode, desc: "QR สำหรับลงทะเบียนและดูผล", color: "text-cyan-500", bg: "bg-cyan-500/10" },
+  { href: "print", label: "พิมพ์บัตร", icon: Printer, desc: "พิมพ์บัตรนักแข่ง 80mm", color: "text-pink-500", bg: "bg-pink-500/10" },
 ];
 
 export default function EventDetailPage() {
@@ -163,66 +163,73 @@ export default function EventDetailPage() {
         </Link>
       </div>
 
-      {/* Event header */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{event.name}</h1>
-          <p className="text-muted-foreground">{formatDate(event.race_date)}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {event.published ? (
-            <Badge variant="default" className="bg-emerald-600">
-              เผยแพร่แล้ว
-            </Badge>
-          ) : (
-            <Badge variant="secondary">แบบร่าง</Badge>
-          )}
-        </div>
-      </div>
-
-      <Separator />
+      {/* Event header card */}
+      <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 dark:border-emerald-900 dark:from-emerald-950/50 dark:to-teal-950/50">
+        <CardContent className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-full bg-emerald-600 text-white">
+              <Calendar className="size-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold sm:text-2xl">{event.name}</h1>
+              <p className="text-sm text-muted-foreground">
+                {formatDate(event.race_date)}
+              </p>
+            </div>
+          </div>
+          <div>
+            {event.published ? (
+              <Badge variant="default" className="bg-emerald-600">
+                เผยแพร่แล้ว
+              </Badge>
+            ) : (
+              <Badge variant="secondary">แบบร่าง</Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>นักแข่ง</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.racerCount}</p>
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="border-emerald-200 dark:border-emerald-900">
+          <CardContent className="flex flex-col items-center py-4">
+            <p className="text-3xl font-bold text-emerald-600">
+              {stats.racerCount}
+            </p>
+            <p className="text-xs text-muted-foreground">นักแข่ง</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>รุ่นการแข่ง</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.classCount}</p>
+        <Card className="border-blue-200 dark:border-blue-900">
+          <CardContent className="flex flex-col items-center py-4">
+            <p className="text-3xl font-bold text-blue-600">
+              {stats.classCount}
+            </p>
+            <p className="text-xs text-muted-foreground">รุ่นการแข่ง</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Checkpoints</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.checkpointCount}</p>
+        <Card className="border-rose-200 dark:border-rose-900">
+          <CardContent className="flex flex-col items-center py-4">
+            <p className="text-3xl font-bold text-rose-600">
+              {stats.checkpointCount}
+            </p>
+            <p className="text-xs text-muted-foreground">Checkpoints</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Navigation grid */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Navigation grid — 2 cols on mobile, 3 on lg */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         {NAV_LINKS.map((link) => (
           <Link key={link.href} href={`/admin/events/${slug}/${link.href}`}>
-            <Card className="cursor-pointer transition-colors hover:bg-accent/50">
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <link.icon className="size-5 text-emerald-600" />
-                  <CardTitle className="text-base">{link.label}</CardTitle>
+            <Card className="h-full cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5">
+              <CardContent className="flex flex-col items-center gap-2 py-5 text-center">
+                <div
+                  className={`flex size-10 items-center justify-center rounded-xl ${link.bg}`}
+                >
+                  <link.icon className={`size-5 ${link.color}`} />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-xs">
+                <CardTitle className="text-sm">{link.label}</CardTitle>
+                <CardDescription className="text-[11px] leading-tight">
                   {link.desc}
                 </CardDescription>
               </CardContent>

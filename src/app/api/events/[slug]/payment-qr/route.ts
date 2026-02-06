@@ -25,7 +25,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // 2. Authorize — check event ownership
     const { data: event, error: eventError } = await supabase
-      .from("events")
+      .from("event-assets")
       .select("id, admin_id")
       .eq("slug", slug)
       .single();
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const filePath = `payment-qr/${event.id}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("events")
+      .from("event-assets")
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
@@ -88,12 +88,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // 5. Get public URL
     const { data: urlData } = supabase.storage
-      .from("events")
+      .from("event-assets")
       .getPublicUrl(filePath);
 
     // 6. Update event with QR URL
     const { data: updated, error: updateError } = await supabase
-      .from("events")
+      .from("event-assets")
       .update({
         payment_qr_url: urlData.publicUrl,
         updated_at: new Date().toISOString(),

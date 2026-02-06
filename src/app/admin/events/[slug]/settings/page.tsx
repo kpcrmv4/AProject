@@ -55,6 +55,14 @@ export default function SettingsPage() {
   const [published, setPublished] = useState(false);
   const [uploading, setUploading] = useState(false);
 
+  // Convert ISO timestamp to datetime-local format (yyyy-MM-ddThh:mm)
+  function toDatetimeLocal(iso: string | null): string {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
   const fetchEvent = useCallback(async () => {
     try {
       const res = await fetch(`/api/events/${slug}`);
@@ -69,8 +77,8 @@ export default function SettingsPage() {
       setEvent(e);
       setName(e.name);
       setRaceDate(e.race_date);
-      setRegistrationOpens(e.registration_opens ?? "");
-      setRegistrationCloses(e.registration_closes ?? "");
+      setRegistrationOpens(toDatetimeLocal(e.registration_opens));
+      setRegistrationCloses(toDatetimeLocal(e.registration_closes));
       setPublished(e.published);
     } catch {
       setError("ไม่สามารถโหลดข้อมูลได้");

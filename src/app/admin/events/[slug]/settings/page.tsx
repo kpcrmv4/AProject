@@ -102,8 +102,12 @@ export default function SettingsPage() {
         body: JSON.stringify({
           name,
           race_date: raceDate,
-          registration_opens: registrationOpens || null,
-          registration_closes: registrationCloses || null,
+          registration_opens: registrationOpens
+            ? new Date(registrationOpens).toISOString()
+            : null,
+          registration_closes: registrationCloses
+            ? new Date(registrationCloses).toISOString()
+            : null,
         }),
       });
 

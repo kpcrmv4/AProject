@@ -70,7 +70,131 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// POST /api/events/[slug]/class-checkpoints — Set mappings (admin only)
+// PUT /api/events/[slug]/class-checkpoints — Bulk save all mappings (admin only)
+export async function PUT(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { slug } = await params;
+    const supabase = await createClient();
+
+    // 1. Authenticate
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        errorResponse("UNAUTHORIZED", "กรุณาเข้าสู่ระบบ"),
+        { status: 401 }
+      );
+    }
+
+    // 2. Validate input
+    const body = await request.json();
+    const mappings = body.mappings as { class_id: string; checkpoint_id: string }[];
+    if (!Array.isArray(mappings)) {
+      return NextResponse.json(
+        errorResponse("VALIDATION_ERROR", "mappings ต้องเป็น array"),
+        { status: 400 }
+      );
+    }
+
+    // 3. Authorize — check event ownership
+    const { data: event, error: eventError } = await supabase
+      .from("events")
+      .select("id, admin_id")
+      .eq("slug", slug)
+      .single();
+
+    if (eventError || !event) {
+      return NextResponse.json(
+        errorResponse("NOT_FOUND", "ไม่พบงานแข่ง"),
+        { status: 404 }
+      );
+    }
+
+    if (event.admin_id !== user.id) {
+      return NextResponse.json(
+        errorResponse("FORBIDDEN", "คุณไม่มีสิทธิ์จัดการงานนี้"),
+        { status: 403 }
+      );
+    }
+
+    // 4. Get all checkpoint IDs for this event
+    const { data: checkpoints, error: cpError } = await supabase
+      .from("checkpoints")
+      .select("id")
+      .eq("event_id", event.id);
+
+    if (cpError) {
+      return NextResponse.json(
+        errorResponse("INTERNAL_ERROR", cpError.message),
+        { status: 500 }
+      );
+    }
+
+    const eventCheckpointIds = new Set((checkpoints ?? []).map((cp) => cp.id));
+
+    // 5. Delete all existing class_checkpoints for this event's checkpoints
+    if (eventCheckpointIds.size > 0) {
+      const { error: deleteError } = await supabase
+        .from("class_checkpoints")
+        .delete()
+        .in("checkpoint_id", [...eventCheckpointIds]);
+
+      if (deleteError) {
+        return NextResponse.json(
+          errorResponse("INTERNAL_ERROR", deleteError.message),
+          { status: 500 }
+        );
+      }
+    }
+
+    // 6. Insert new mappings (only those belonging to this event's checkpoints)
+    const validMappings = mappings.filter((m) =>
+      eventCheckpointIds.has(m.checkpoint_id)
+    );
+
+    if (validMappings.length > 0) {
+      const { error: insertError } = await supabase
+        .from("class_checkpoints")
+        .insert(validMappings);
+
+      if (insertError) {
+        return NextResponse.json(
+          errorResponse("INTERNAL_ERROR", insertError.message),
+          { status: 500 }
+        );
+      }
+    }
+
+    // 7. Return the new mappings
+    if (eventCheckpointIds.size === 0) {
+      return NextResponse.json(successResponse([]));
+    }
+
+    const { data: result, error: fetchError } = await supabase
+      .from("class_checkpoints")
+      .select("*")
+      .in("checkpoint_id", [...eventCheckpointIds]);
+
+    if (fetchError) {
+      return NextResponse.json(
+        errorResponse("INTERNAL_ERROR", fetchError.message),
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(successResponse(result));
+  } catch {
+    return NextResponse.json(
+      errorResponse("INTERNAL_ERROR", "เกิดข้อผิดพลาด"),
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/events/[slug]/class-checkpoints — Set mappings for a single class (admin only)
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { slug } = await params;
